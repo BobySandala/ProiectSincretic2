@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Hi, {{ user.username }}!</h1>
+	<hr>
+    <div id="temperature-display">
+		<p id="temperature">Temperatura este: </p>
+		<p id="led-state">Starea LED-ului este: </p>
+		<p id="inund-state">Inundatie: </p>
+		<button type="button" id="toggle-button">Schimba stare LED</button><br><br><br>
+		<label for="lname">Mesaj catre Arduino</label>
+		<input type="text" id="ard-message" name="lname" maxlength="15"><br><br>
+		<input type="button" value="Submit" id="submit-button">
+	</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        function updateValues() {
+            // Fetch temperature and LED state from server
+            $.get('/get_data', function(data) {
+				// Parse JSON response
+				var temperature = data.temperature;
+				var ledState = data.led_state;
+				var inundState = data.inundatie_state;
+
+				// Update HTML content
+				$('#temperature').text('Temperature: ' + temperature);
+				$('#led-state').text('LED State: ' + ledState);
+				$('#inund-state').text('Inundatie: ' + inundState);
+			});
+        }
+
+        // Initial call to update values
+        updateValues();
+        // Call updateValues function every second
+        setInterval(updateValues, 1000);
+		
+    });
+	// JavaScript code to handle toggle button click
+    document.getElementById("toggle-button").addEventListener("click", function() {
+        // Add your JavaScript code here to toggle the LED state
+        console.log('Button clicked!'); // Example: Log a message to the console
+		$.get('/toggle_led', function(data) {
+				
+				console.log(data);
+			});
+    });
+	
+	// JavaScript code to handle submit button click
+    document.getElementById("submit-button").addEventListener("click", function() {
+
+		text = "m" + document.getElementById("ard-message").value;
+		text = text.padEnd(16, '0');
+		//console.log(text); // Example: Log a message to the console
+		
+		$.get('/msg_send', { arg1: text }, function(data) {
+			console.log(data);
+		});
+    });
+</script>
+{% endblock scripts %}
